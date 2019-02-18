@@ -1,0 +1,34 @@
+{
+    "name": "itas/laravel-audit",
+    "description": "Data-audit features for Laravel Application.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "itas",
+            "email": "luoyangpeng@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Itas\\LaravelAudit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.2",
+        "phpunit/phpunit": "~7",
+        "orchestra/testbench": "^3.7"
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Itas\\LaravelAudit\\AuditServiceProvider"]
+        }
+    }
+}
