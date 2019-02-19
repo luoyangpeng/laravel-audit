@@ -167,44 +167,54 @@
         </div>
 
         <ul class="status-list">
-            @foreach($audit['audit']['audit_users'] as $user)
-                @if($user['status'] == 0 && $user['auditer']['id'] == $audit['audit']['current_audit_user']['id'])
-                    <li class="active">
-                        <div class="status-content-before">等待{{$user['node']}}审核（{{$user['auditer']['name']}}）</div>
-                        @if($audit['audit']['current_audit_user']['id'] == auth()->id() || 1)
-                        <div class="audit-button">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#auditModal">
-                                审核
-                            </button>
-                        </div>
-                        @endif
-                        <div class="status-line"></div>
-                    </li>
-                @elseif($user['status'] == 1)
-                <li class="success">
-                    <div class="status-content-before">{{$user['node']}}审核通过（{{$user['auditer']['name']}}）</div>
-                    <div class="status-time-before">{{$user['updated_at']}}</div>
-                    <div class="status-line"></div>
-                </li>
-                @elseif($user['status'] == 2)
-                    <li class="fail">
-                        <div class="status-content-before">{{$user['node']}}审核不通过（{{$user['auditer']['name']}}）</div>
-                        <div class="status-time-before">{{$user['updated_at']}}</div>
-                        @foreach($audit['audit']['audit_records'] as $record)
-                            @if($record['user_id'] == $user['user_id'])
-                                <div class="status-remark-before">备注: {{$record['remark']}}</div>
+            @if($audit['audit']['audit_users'])
+                @foreach($audit['audit']['audit_users'] as $user)
+                    @if($user['status'] == 0 && $user['auditer']['id'] == $audit['audit']['current_audit_user']['id'])
+                        <li class="active">
+                            <div class="status-content-before">等待{{$user['node']}}审核（{{$user['auditer']['name']}}）</div>
+                            @if($audit['audit']['current_audit_user']['id'] == auth()->id())
+                            <div class="audit-button">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#auditModal">
+                                    审核
+                                </button>
+                            </div>
                             @endif
-                        @endforeach
+                            <div class="status-line"></div>
+                        </li>
+                    @elseif($user['status'] == 1)
+                    <li class="success">
+                        <div class="status-content-before">{{$user['node']}}审核通过（{{$user['auditer']['name']}}）</div>
+                        <div class="status-time-before">{{$user['updated_at']}}</div>
                         <div class="status-line"></div>
                     </li>
-                @else
-                    <li>
-                        <div class="status-content-before">{{$user['node']}}审核（{{$user['auditer']['name']}}）</div>
-                        <div class="status-line"></div>
-                    </li>
+                    @elseif($user['status'] == 2)
+                        <li class="fail">
+                            <div class="status-content-before">{{$user['node']}}审核不通过（{{$user['auditer']['name']}}）</div>
+                            <div class="status-time-before">{{$user['updated_at']}}</div>
+                            @foreach($audit['audit']['audit_records'] as $record)
+                                @if($record['user_id'] == $user['user_id'])
+                                    <div class="status-remark-before">备注: {{$record['remark']}}</div>
+                                @endif
+                            @endforeach
+                            <div class="status-line"></div>
+                        </li>
+                    @else
+                        <li>
+                            <div class="status-content-before">{{$user['node']}}审核（{{$user['auditer']['name']}}）</div>
+                            <div class="status-line"></div>
+                        </li>
+                    @endif
+                @endforeach
+            @else
+                @if($audit['audit']['status'] == 0)
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#auditModal">
+                    审核
+                </button>
                 @endif
-            @endforeach
+            @endif
+
         </ul>
+
     </div>
     <!-- Modal -->
     <div class="modal fade" id="auditModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

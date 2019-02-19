@@ -43,12 +43,35 @@ class AuditController extends Controller
             ]);
         }
 
-        $audit = AuditRecord::where('user_id', $userId)->where('audit_id', $auditId)->exists();
+        $audit = Audit::find($auditId);
 
-        if ($audit) {
+        if (empty($audit)) {
             return response()->json([
                 'code' => 400,
-                'message' => '已经审核过了！'
+                'message' => '没有找到数据！'
+            ]);
+        }
+
+        if ($audit->status == 1) {
+            return response()->json([
+                'code' => 400,
+                'message' => '记录已经审核通过了！'
+            ]);
+        }
+
+        if ($audit->audituser_id != 0 && $audit->audituser_id != $userId) {
+            return response()->json([
+                'code' => 400,
+                'message' => '你没有审核权限！'
+            ]);
+        }
+
+        $auditRecord = AuditRecord::where('user_id', $userId)->where('audit_id', $auditId)->exists();
+
+        if ($auditRecord) {
+            return response()->json([
+                'code' => 400,
+                'message' => '您已经审核过了！'
             ]);
         }
 
@@ -64,16 +87,21 @@ class AuditController extends Controller
         AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->update(['status' => $status]);
 
         $currentAuditUser = AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->first();
-        $nextAuditUser = AuditUser::where('audit_id', $auditId)->where('sort', $currentAuditUser->sort + 1)->first();
 
-        if ($status == Audit::FAIL_AUDIT || !$nextAuditUser) {
+        $nextAuditUser = [];
+
+        if ($currentAuditUser) {
+            $nextAuditUser = AuditUser::where('audit_id', $auditId)->where('sort', $currentAuditUser->sort + 1)->first();
+        }
+
+        if ($status == Audit::FAIL_AUDIT || empty($nextAuditUser)) {
             $auditUserId = 0;
         } else {
             $auditUserId = $nextAuditUser->user_id;
         }
 
         // 审核完成
-        if (!$nextAuditUser) {
+        if (empty($nextAuditUser) && $status == Audit::SUCCESS_AUDIT) {
             Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::SUCCESS_AUDIT]);
         }
 
@@ -82,7 +110,7 @@ class AuditController extends Controller
             Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::FAIL_AUDIT]);
         }
 
-        if ($nextAuditUser && $status != Audit::FAIL_AUDIT) {
+        if ($nextAuditUser && $status == Audit::SUCCESS_AUDIT) {
             Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId]);
 
             // 邮件通知

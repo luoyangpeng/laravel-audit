@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Mail;
 
 class CreateAuditRecord
 {
-	 /**
+     /**
      * Create the event listener.
      *
      * @return void
@@ -40,25 +40,33 @@ class CreateAuditRecord
     {
         $object = $event->object;
 
-        $auditUserId = current($object->users)['user_id'];
+        $auditUserId = 0;
 
-        $audited = Audit::create([
-        	'auditable_id' => $object->model->id,
-        	'auditable_type' => get_class($object->model),
-            'audituser_id' => $auditUserId
-        ]);
-
-
-        $auditUsers = [];
-
-        foreach ($object->users as $user) {
-        	$auditUsers[] = ['user_id' => $user['user_id'], 'node' => $user['node'], 'sort' => $user['sort']];
+        if (property_exists($object, 'users')) {
+            $auditUserId = current($object->users)['user_id'];
         }
 
-        $audited->auditUsers()->createMany($auditUsers);
+        $audited = Audit::create([
+            'auditable_id' => $object->model->id,
+            'auditable_type' => get_class($object->model),
+            'audituser_id' => $auditUserId
+        ]);
+        
+        if (property_exists($object, 'users') && $object->users) {
+            $auditUsers = [];
+
+            foreach ($object->users as $user) {
+                $auditUsers[] = ['user_id' => $user['user_id'], 'node' => $user['node'], 'sort' => $user['sort']];
+            }
+
+            $audited->auditUsers()->createMany($auditUsers);
+        }
 
         // 邮件通知
         $user = config('auth.providers.users.model')::where('id', $auditUserId)->first();
-        Mail::to($user)->send(new AuditTask());
+
+        if ($user) {
+            Mail::to($user)->send(new AuditTask());
+        }
     }
 }
