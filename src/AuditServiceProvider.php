@@ -14,6 +14,7 @@
 namespace Itas\LaravelAudit;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
 
 class AuditServiceProvider extends ServiceProvider
 {
@@ -47,6 +48,12 @@ class AuditServiceProvider extends ServiceProvider
         } else {
             $this->app['router']->post('itas/audit', '\Itas\LaravelAudit\Controllers\AuditController@audit');
         }
+
+        foreach ($this->listens() as $event => $listeners) {
+            foreach ($listeners as $listener) {
+                Event::listen($event, $listener);
+            }
+        }
     }
     /**
      * Register bindings in the container.
@@ -56,5 +63,10 @@ class AuditServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             \dirname(__DIR__).'/config/audit.php', 'audit'
         );
+    }
+
+    public function listens()
+    {
+        return $this->listen;
     }
 }
