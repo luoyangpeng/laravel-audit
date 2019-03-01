@@ -18,15 +18,15 @@ Trait HasAudit
 {
     public $users;
 
-	/**
+    /**
      * Return audit record.
      *
      * @return \Illuminate\Database\Eloquent\Relations\morphOne
      */
-	public function audit()
-	{
-		return $this->morphOne(config('audit.audit_model'), 'auditable');
-	}
+    public function audit()
+    {
+        return $this->morphOne(config('audit.audit_model'), 'auditable');
+    }
 
     /**
      * Set Audit User

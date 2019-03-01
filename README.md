@@ -130,5 +130,8 @@ class LeaveController extends Controller
 ```
 
 ## 效果图
-![图片](https://thumbnail0.baidupcs.com/thumbnail/3b26962555afb07761e7b47bc7e74cf6?fid=3173254733-250528-1027778808985194&time=1550541600&rt=sh&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-OtspgQMbHe9yaDQW%2FQywWL2rvVQ%3D&expires=8h&chkv=0&chkbd=0&chkpc=&dp-logid=1146493513816108424&dp-callid=0&size=c710_u400&quality=100&vuk=-&ft=video)
-![图片](https://thumbnail0.baidupcs.com/thumbnail/1b2d8a7ec188c3b4ca01e577d27bae0d?fid=3173254733-250528-106465622124692&time=1550462400&rt=sh&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-2QwCWtmJhRv3hSbyo2D8UIRGsqk%3D&expires=8h&chkv=0&chkbd=0&chkpc=&dp-logid=1124895284498775600&dp-callid=0&size=c710_u400&quality=100&vuk=-&ft=video)
+![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit1.png)
+
+![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit2.png)
+
+![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit3.png)

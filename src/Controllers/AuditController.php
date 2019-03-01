@@ -59,7 +59,7 @@ class AuditController extends Controller
             ]);
         }
 
-        if ($audit->audituser_id != 0 && $audit->audituser_id != $userId) {
+        if ($audit->audituser_id != 0 && $audit->audituser_id != auth()->id()) {
             return response()->json([
                 'code' => 400,
                 'message' => '你没有审核权限！'
@@ -75,49 +75,63 @@ class AuditController extends Controller
             ]);
         }
 
-        // 添加审核记录
-        AuditRecord::create([
-            'user_id' => $userId,
-            'audit_id' => $auditId,
-            'remark' => $remark,
-            'status' => $status
-        ]);
+        \DB::beginTransaction();
 
-        // 更新用户审核状态
-        AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->update(['status' => $status]);
+        try {
+            // 添加审核记录
+            AuditRecord::create([
+                'user_id' => $userId,
+                'audit_id' => $auditId,
+                'remark' => $remark,
+                'status' => $status
+            ]);
 
-        $currentAuditUser = AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->first();
+            // 更新用户审核状态
+            AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->update(['status' => $status]);
 
-        $nextAuditUser = [];
+            $currentAuditUser = AuditUser::where('user_id', $userId)->where('audit_id', $auditId)->first();
 
-        if ($currentAuditUser) {
-            $nextAuditUser = AuditUser::where('audit_id', $auditId)->where('sort', $currentAuditUser->sort + 1)->first();
+            $nextAuditUser = [];
+
+            if ($currentAuditUser) {
+                $nextAuditUser = AuditUser::where('audit_id', $auditId)->where('sort', $currentAuditUser->sort + 1)->first();
+            }
+
+            if ($status == Audit::FAIL_AUDIT || empty($nextAuditUser)) {
+                $auditUserId = 0;
+            } else {
+                $auditUserId = $nextAuditUser->user_id;
+            }
+
+            // 审核完成
+            if (empty($nextAuditUser) && $status == Audit::SUCCESS_AUDIT) {
+                Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::SUCCESS_AUDIT]);
+            }
+
+            // 审核失败
+            if ($status == Audit::FAIL_AUDIT) {
+                Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::FAIL_AUDIT]);
+            }
+
+            if ($nextAuditUser && $status == Audit::SUCCESS_AUDIT) {
+                Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId]);
+
+                // 邮件通知
+                $user = config('auth.providers.users.model')::where('id', $auditUserId)->first();
+                Mail::to($user)->send(new AuditTask());
+            }
+        } catch(\Exception $e) {
+            \DB::rollBack();
+
+            return response()->json([
+                'code' => 400,
+                'message' => $e->getMessage()
+            ]);
         }
 
-        if ($status == Audit::FAIL_AUDIT || empty($nextAuditUser)) {
-            $auditUserId = 0;
-        } else {
-            $auditUserId = $nextAuditUser->user_id;
-        }
+        \DB::commit();
 
-        // 审核完成
-        if (empty($nextAuditUser) && $status == Audit::SUCCESS_AUDIT) {
-            Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::SUCCESS_AUDIT]);
-        }
-
-        // 审核失败
-        if ($status == Audit::FAIL_AUDIT) {
-            Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId, 'status' => Audit::FAIL_AUDIT]);
-        }
-
-        if ($nextAuditUser && $status == Audit::SUCCESS_AUDIT) {
-            Audit::where('id', $auditId)->update(['audituser_id' => $auditUserId]);
-
-            // 邮件通知
-            $user = config('auth.providers.users.model')::where('id', $auditUserId)->first();
-            Mail::to($user)->send(new AuditTask());
-        }
-
+        
         return response()->json([
             'code' => 200,
             'message' => 'success！'

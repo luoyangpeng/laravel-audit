@@ -28,7 +28,7 @@ class CreateAuditUserTable extends Migration
             $table->unsignedInteger(config('audit.audit_table').'_id')->index()->comment('audit_id');
             $table->string('node', 20)->comment('审核节点');
             $table->unsignedInteger('sort')->comment('审核顺序');
-            $table->unsignedInteger('status')->comment('审核状态 0：未审核 1：审核通过 2：审核不通过');
+            $table->unsignedInteger('status')->default(0)->comment('审核状态 0：未审核 1：审核通过 2：审核不通过');
             $table->timestamps();
         });
     }
