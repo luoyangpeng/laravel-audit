@@ -130,8 +130,8 @@ class LeaveController extends Controller
 ```
 
 ## 效果图
-![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit1.png)
+![图片](https://github.com/luoyangpeng/laravel-audit/raw/master/images/audit1.png)
 
-![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit2.png)
+![图片](https://github.com/luoyangpeng/laravel-audit/raw/master/images/audit2.png)
 
-![图片](https://github.com/luoyangpeng/laravel-audit/tree/master/images/audit3.png)
+![图片](https://github.com/luoyangpeng/laravel-audit/raw/master/images/audit3.png)
